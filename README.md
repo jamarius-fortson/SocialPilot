@@ -2,8 +2,6 @@
 
 SocialPilot is a Python-based autonomous social media workflow built around a stateful graph and specialist AI agents. It is designed to run brand-safe campaigns, generate platform-native copy, execute approvals, and schedule content with minimal manual coordination.
 
-![SocialPilot Dashboard](socialpilot_dashboard_mockup_1772870940932.png)
-
 ## What this repository is
 
 - A FastAPI backend for `client/profile`, `run`, and approval workflows.
