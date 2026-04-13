@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniViral | Autonomous Control Center</title>
+    <title>SocialPilot | Autonomous Control Center</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -204,7 +204,7 @@
 <body>
     <div class="dashboard">
         <aside>
-            <div class="logo">OmniViral.</div>
+            <div class="logo">SocialPilot.</div>
             <nav>
                 <ul>
                     <li class="active">Dashboard</li>
@@ -278,11 +278,6 @@
 
     <script>
         const API_BASE = "http://127.0.0.1:8000";
-        const API_KEY = "ov_live_sk_example_123";
-        const HEADERS = {
-            'Content-Type': 'application/json',
-            'X-OmniViral-Key': API_KEY
-        };
 
         function openModal() { document.getElementById('campaignModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('campaignModal').style.display = 'none'; }
@@ -299,48 +294,24 @@
             try {
                 const response = await fetch(`${API_BASE}/run`, {
                     method: 'POST',
-                    headers: HEADERS,
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ client_id: clientId, task_type: taskType })
                 });
-                
-                if (!response.ok) throw new Error(await response.text());
-                
                 const data = await response.json();
-                addLog(`Task ${data.task_id} queued. Polling status...`);
-                pollTaskStatus(data.task_id);
+                
+                if (data.status === 'awaiting_approval') {
+                    addPendingApproval(data);
+                } else {
+                    addLog(`Success: ${data.task_type} completed.`);
+                }
             } catch (err) {
                 addLog(`Error: ${err.message}`);
             }
         }
 
-        async function pollTaskStatus(taskId) {
-            const interval = setInterval(async () => {
-                try {
-                    const res = await fetch(`${API_BASE}/task/${taskId}`, { headers: HEADERS });
-                    if (!res.ok) return;
-                    
-                    const data = await res.json();
-                    
-                    if (data.status === 'awaiting_approval') {
-                        clearInterval(interval);
-                        addPendingApproval(data);
-                    } else if (data.status === 'completed') {
-                        clearInterval(interval);
-                        addLog(`Success: Task ${taskId} completed.`);
-                    } else if (data.status === 'failed') {
-                        clearInterval(interval);
-                        addLog(`Error: Task ${taskId} failed. ${data.error}`);
-                    }
-                } catch (e) {
-                    console.error("Polling error", e);
-                }
-            }, 2000); // Check every 2 seconds
-        }
-
         function addLog(msg) {
             const logBox = document.getElementById('logs');
             logBox.innerHTML += `<br>> ${msg}`;
-            logBox.scrollTop = logBox.scrollHeight;
         }
 
         function addPendingApproval(data) {
@@ -351,12 +322,12 @@
             div.className = 'pending-item';
             div.id = `approval-${data.approval_id}`;
             div.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; justify-content: space-between;">
                     <div>
-                        <strong>${data.reason || 'Human Review Required'}</strong><br>
-                        <span style="font-size: 0.8rem; color: var(--text-muted)">PLATFORM: Cross-Platform</span>
+                        <strong>${data.reason}</strong><br>
+                        <span style="font-size: 0.8rem; color: var(--text-muted)">PLATFORM: ${data.content ? 'Instagram/X' : 'Detecting...'}</span>
                     </div>
-                    <div style="display: flex; gap: 5px;">
+                    <div>
                         <button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; background: var(--secondary)" onclick="approve('${data.approval_id}')">Approve</button>
                         <button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.7rem; background: var(--accent)" onclick="reject('${data.approval_id}')">Reject</button>
                     </div>
@@ -367,25 +338,19 @@
         }
 
         async function approve(id) {
-            try {
-                const response = await fetch(`${API_BASE}/approve/${id}`, { method: 'POST', headers: HEADERS });
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById(`approval-${id}`).remove();
-                    addLog(`Approval ${id} sent. Resuming task ${data.task_id}...`);
-                    updateCount(-1);
-                    pollTaskStatus(data.task_id);
-                }
-            } catch (e) { addLog(`Error approving: ${e.message}`); }
+            const response = await fetch(`${API_BASE}/approve/${id}`, { method: 'POST' });
+            if (response.ok) {
+                document.getElementById(`approval-${id}`).remove();
+                addLog(`Approval ${id} sent to scheduler.`);
+                updateCount(-1);
+            }
         }
 
         async function reject(id) {
-            try {
-                await fetch(`${API_BASE}/reject/${id}`, { method: 'POST', headers: HEADERS });
-                document.getElementById(`approval-${id}`).remove();
-                addLog(`Approval ${id} rejected.`);
-                updateCount(-1);
-            } catch (e) { addLog(`Error rejecting: ${e.message}`); }
+            await fetch(`${API_BASE}/reject/${id}`, { method: 'POST' });
+            document.getElementById(`approval-${id}`).remove();
+            addLog(`Approval ${id} rejected.`);
+            updateCount(-1);
         }
 
         function updateCount(delta) {

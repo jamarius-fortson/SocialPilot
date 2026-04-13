@@ -9,7 +9,7 @@ from app.graphs.orchestrator import create_social_pilot_graph
 from app.schemas.state import SocialState, BrandProfile
 
 def test_full_campaign_flow():
-    print("\n--- Testing OmniViral Full Campaign Flow (Mock Mode) ---\n")
+    print("\n--- Testing SocialPilot Full Campaign Flow (Mock Mode) ---\n")
     try:
         # 1. Setup Graph
         graph = create_social_pilot_graph()

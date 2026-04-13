@@ -13,7 +13,7 @@ logging.basicConfig(
     ]
 )
 
-logger = logging.getLogger("OmniViral")
+logger = logging.getLogger("SocialPilot")
 
 def log_agent_action(agent_name: str, action: str, details: Any):
     logger.info(f"[{agent_name}] {action}: {json.dumps(details, indent=2) if isinstance(details, (dict, list)) else details}")

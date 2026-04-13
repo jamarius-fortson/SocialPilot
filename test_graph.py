@@ -8,7 +8,7 @@ from app.graphs.orchestrator import create_social_pilot_graph
 from app.schemas.state import SocialState, BrandProfile
 
 def test_graph_compilation():
-    print("Testing OmniViral Graph Compilation...")
+    print("Testing SocialPilot Graph Compilation...")
     try:
         graph = create_social_pilot_graph()
         print("✅ Graph compiled successfully!")

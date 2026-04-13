@@ -47,7 +47,9 @@ def content_generator_node(state: SocialState) -> Dict[str, Any]:
         }
     
     factory = AgentFactory(state["brand_profile"].model_dump())
-    
+    agent = factory.create_content_generator()
+    agent.tools = get_all_tools()
+
     task = Task(
         description=f"Generate social media content based on the following trend data: {state.get('trend_data')}. Target platforms: {', '.join(state['brand_profile'].active_platforms)}.",
         expected_output="A list of generated posts with hooks, captions, and visual briefs as per CONTENT_GENERATOR_PROMPT.",
@@ -67,6 +69,7 @@ def campaign_scheduler_node(state: SocialState) -> Dict[str, Any]:
         }
     
     factory = AgentFactory(state["brand_profile"].model_dump())
+    agent = factory.create_campaign_scheduler()
     agent.tools = get_all_tools()
     
     task = Task(
